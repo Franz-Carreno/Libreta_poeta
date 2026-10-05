@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Libreta del Poeta</title>
+    <link rel="icon" href="data:,">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #1a0f0a;
+            font-family: 'Caveat', cursive;
+            overflow: hidden; /* Evitar scroll */
+        }
+
+        #escritorio {
+            width: 100vw;
+            height: 100vh;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(255,220,150,0.05) 0%, rgba(0,0,0,0.9) 100%),
+                repeating-linear-gradient(to right, transparent, transparent 40px, rgba(0,0,0,0.1) 40px, rgba(0,0,0,0.1) 42px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Ventana con cielo y cometa */
+        .ventana {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 180px;
+            height: 280px;
+            background: linear-gradient(to bottom, #010615, #081a40);
+            border: 12px solid #2a1610;
+            border-radius: 4px;
+            box-shadow: 
+                inset 0 0 15px rgba(0,0,0,0.8),
+                5px 5px 15px rgba(0,0,0,0.6);
+            overflow: hidden;
+            z-index: 1;
+        }
+        .ventana-cross {
+            position: absolute;
+            top: 50%; left: 0; width: 100%; height: 8px;
+            background: #2a1610; transform: translateY(-50%);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            z-index: 3;
+        }
+        .ventana-cross-vert {
+            position: absolute;
+            top: 0; left: 50%; width: 8px; height: 100%;
+            background: #2a1610; transform: translateX(-50%);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+            z-index: 3;
+        }
+        .cielo {
+            position: absolute;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+        .estrella {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: titilar 2s infinite ease-in-out alternate;
+        }
+        @keyframes titilar {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+        .cometa {
+            position: absolute;
+            width: 3px; height: 3px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px rgba(255,255,255,0.8);
+            animation: cometa-anim 12s infinite linear;
+            z-index: 2;
+        }
+        .cometa::after {
+            content: ''; position: absolute;
+            top: 0; left: 0;
+            width: 60px; height: 1px;
+            background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
+            transform: rotate(-45deg);
+            transform-origin: left top;
+        }
+        @keyframes cometa-anim {
+            0% { top: -10%; left: 110%; opacity: 1; }
+            15% { top: 70%; left: -30%; opacity: 0; }
+            100% { top: 70%; left: -30%; opacity: 0; }
+        }
+
+        /* Libreta */
+        .libreta-container {
+            width: 90%;
+            max-width: 900px;
+            height: 60vh;
+            min-height: 450px;
+            z-index: 10;
+            position: relative;
+            perspective: 1500px;
+        }
+        .libreta {
+            width: 100%;
+            height: 100%;
+            background-color: #4a2f1d;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7), inset 0 0 10px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .marcapaginas {
+            position: absolute;
+            bottom: -30px;
+            right: 15%;
+            width: 25px;
+            height: 80px;
+            background: #8b2500;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            z-index: 1;
+        }
+        .marcapaginas::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            border-left: 12.5px solid #8b2500;
+            border-right: 12.5px solid #8b2500;
+            border-bottom: 15px solid transparent;
+        }
+        .paginas-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2;
+        }
+        .lomo-sombra {
+            position: absolute;
+            top: 0; left: 50%;
+            width: 60px; height: 100%;
+            transform: translateX(-50%);
+            background: linear-gradient(to right, 
+                transparent 0%, rgba(0,0,0,0.05) 20%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.05) 80%, transparent 100%);
+            pointer-events: none;
+            z-index: 10;
+        }
+        .hoja {
+            flex: 1;
+            padding: 2.5rem 3rem 2.5rem 3.5rem;
+            position: relative;
+            cursor: pointer;
+            background-color: #fdf5e6;
+            background-image: repeating-linear-gradient(transparent, transparent calc(2.5rem - 1px), rgba(0,0,0,0.08) 2.5rem);
+            background-size: 100% 2.5rem;
+            transition: background-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+        .hoja:hover {
+            background-color: #fffaf0;
+        }
+        .hoja-izq {
+            border-radius: 4px 0 0 4px;
+            border-right: 1px solid rgba(0,0,0,0.1);
+        }
+        .hoja-der {
+            border-radius: 0 4px 4px 0;
+            border-left: 1px solid rgba(0,0,0,0.1);
+        }
+        /* Margen rojo de la libreta */
+        .hoja::after {
+            content: ''; position: absolute;
+            top: 0; bottom: 0; left: 35px;
+            width: 2px;
+            border-left: 1px solid rgba(220, 50, 50, 0.25);
+            border-right: 1px solid rgba(220, 50, 50, 0.25);
+        }
+
+        .contenido-fade {
+            transition: opacity 0.4s ease;
+            flex-grow: 1;
+            padding-left: 10px; /* Separar del margen rojo */
+        }
+        
+        .texto-poeta {
+            font-size: 2.3rem;
+            color: #2c3e50;
+            line-height: 2.5rem;
+            margin-top: 0.3rem;
+            font-weight: 700;
+            transform: rotate(-1deg);
+        }
+        .texto-mensaje {
+            font-size: 1.8rem;
+            color: #2a2a2a;
+            line-height: 2.5rem;
+            margin-top: 0.3rem;
+        }
+
+        .indicador {
+            font-size: 1.5rem;
+            color: rgba(0,0,0,0.4);
+            opacity: 0.4;
+            transition: opacity 0.3s;
+            margin-top: auto;
+        }
+        .hoja:hover .indicador { opacity: 1; }
+        .ind-izq { text-align: left; }
+        .ind-der { text-align: right; }
+
+        /* Pantalla Inicial */
+        #overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #0b0705;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1.2s ease;
+        }
+        #overlay h1 {
+            color: #fdf5e6;
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 0 20px;
+            font-weight: 400;
+            text-shadow: 0 0 20px rgba(253, 245, 230, 0.1);
+        }
+        .btn-abrir {
+            background: transparent;
+            color: #fdf5e6;
+            border: 2px solid #fdf5e6;
+            padding: 15px 40px;
+            font-family: 'Caveat', cursive;
+            font-size: 2.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-abrir:hover {
+            background: #fdf5e6;
+            color: #0b0705;
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(253, 245, 230, 0.3);
+        }
+
+        /* Responsive Mobile */
+        @media (max-width: 800px) {
+            .ventana {
+                width: 120px; height: 180px;
+                top: 20px; right: 20px;
+                border-width: 8px;
+            }
+            .libreta-container {
+                height: 75vh;
+                width: 95%;
+            }
+            .paginas-container {
+                flex-direction: column;
+            }
+            .lomo-sombra {
+                top: 50%; left: 0; width: 100%; height: 40px;
+                transform: translateY(-50%);
+                background: linear-gradient(to bottom, 
+                    transparent 0%, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 80%, transparent 100%);
+            }
+            .hoja {
+                padding: 1.5rem 1rem 1.5rem 2.5rem;
+            }
+            .hoja::after { left: 25px; }
+            .hoja-izq { border-radius: 4px 4px 0 0; border-right: none; border-bottom: 1px dashed rgba(0,0,0,0.1); }
+            .hoja-der { border-radius: 0 0 4px 4px; border-left: none; }
+            .texto-poeta { font-size: 1.8rem; }
+            .texto-mensaje { font-size: 1.5rem; }
+            #overlay h1 { font-size: 3rem; }
+            
+            /* Ajuste de indicadores en móvil */
+            .ind-izq { position: absolute; bottom: 10px; left: 10px; }
+            .ind-der { position: absolute; bottom: 10px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="overlay">
+        <h1>Tengo mil hojas repletas para ti, Mi niña</h1>
+        <button class="btn-abrir" id="btn-abrir">Abrir Libreta</button>
+    </div>
+
+    <div id="escritorio">
+        <div class="ventana">
+            <div class="cielo"></div>
+            <div class="cometa"></div>
+            <div class="ventana-cross"></div>
+            <div class="ventana-cross-vert"></div>
+        </div>
+        
+        <div class="libreta-container">
+            <div class="libreta">
+                <div class="marcapaginas"></div>
+                <div class="paginas-container">
+                    <div class="lomo-sombra"></div>
+                    
+                    <div class="hoja hoja-izq" id="hoja-izq">
+                        <div class="contenido-fade" id="fade-izq">
+                            <div class="texto-poeta" id="texto-izq"></div>
+                        </div>
+                        <div class="indicador ind-izq" id="ind-izq">← Volver</div>
+                    </div>
+                    
+                    <div class="hoja hoja-der" id="hoja-der">
+                        <div class="contenido-fade" id="fade-der">
+                            <div class="texto-mensaje" id="texto-der"></div>
+                        </div>
+                        <div class="indicador ind-der" id="ind-der">Siguiente →</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="audio-poeta" src="Chino &amp; Nacho - El Poeta.mp3" preload="auto"></audio>
+
+    <script>
+        const spreads = [
+            {
+                izq: `"Por ti me he vuelto un poeta, hago rimas en mi vieja libreta."`,
+                der: `No soy de escribir mucho, pero desde que llegaste tú, hasta las palabras me fluyen distinto. Esta libreta es solo un rincón para decirte lo feliz que soy de estar en tu vida.`
+            },
+            {
+                izq: `"Miro al cielo esperando un cometa, para pedirle un deseo y es que te traiga hasta aquí."`,
+                der: `Entiendo cuando necesitas tu espacio y tu paz, y lo respeto muchísimo. Solo quiero que sepas que siempre me hace ilusión verte y compartir contigo.`
+            },
+            {
+                izq: `"Ya yo tengo mil hojas repletas, un armario de páginas completas..."`,
+                der: `Podría escribir mil páginas sobre lo valiente que eres al enfrentar tus miedos, sobre lo mucho que admiro tu vocación de catequista y la hermosa mujer que eres.`
+            },
+            {
+                izq: `"Me hace feliz tenerte..."`,
+                der: `Y es la verdad. Tenerte cerca, incluso cuando vamos lento y a tu propio ritmo, es algo que me llena de alegría todos los días. Eres mi lugar seguro, igual que quiero ser el tuyo.`
+            },
+            {
+                izq: `"Tú me gustas, cómo negarlo"`,
+                der: `Me gustas por cómo eres, por tu forma de pensar y hasta por lo penosa que puedes ser al entregar un carrito. Me gusta todo de ti.`
+            },
+            {
+                izq: `"No me asusta, solo hay que demostrarlo"`,
+                der: `Conozco tus miedos, pero quiero que sepas que mis intenciones son sinceras. No me asusta ir despacio, solo quiero demostrártelo cuidando tu tranquilidad.`
+            },
+            {
+                izq: `"Por lo que veo yo voy a amarte por un rato largo"`,
+                der: `No hay prisa, mi amor. Sea como sea nuestro camino, quiero estar ahí para apoyarte. No tienes que responder a esto, solo apágate y descansa hoy. Te quiero demasiado.`
+            }
+        ];
+
+        let paginaActual = 0;
+        let isAnimating = false;
+
+        function updatePage(initial = false) {
+            if (isAnimating && !initial) return;
+            if (!initial) isAnimating = true;
+
+            const fadeIzq = document.getElementById('fade-izq');
+            const fadeDer = document.getElementById('fade-der');
+            const textoIzq = document.getElementById('texto-izq');
+            const textoDer = document.getElementById('texto-der');
+            const indIzq = document.getElementById('ind-izq');
+            const indDer = document.getElementById('ind-der');
+
+            if (!initial) {
+                fadeIzq.style.opacity = 0;
+                fadeDer.style.opacity = 0;
+            }
+
+            setTimeout(() => {
+                textoIzq.innerText = spreads[paginaActual].izq;
+                textoDer.innerText = spreads[paginaActual].der;
+                
+                indIzq.style.visibility = paginaActual === 0 ? 'hidden' : 'visible';
+                indDer.style.visibility = paginaActual === spreads.length - 1 ? 'hidden' : 'visible';
+                
+                if (!initial) {
+                    fadeIzq.style.opacity = 1;
+                    fadeDer.style.opacity = 1;
+                }
+                
+                setTimeout(() => { isAnimating = false; }, 400);
+            }, initial ? 0 : 400);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updatePage(true);
+            
+            // Generar estrellas aleatorias
+            const cielo = document.querySelector('.cielo');
+            for (let i = 0; i < 40; i++) {
+                const star = document.createElement('div');
+                star.className = 'estrella';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.width = (Math.random() * 2 + 1) + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 3 + 's';
+                cielo.appendChild(star);
+            }
+        });
+
+        document.getElementById('hoja-izq').addEventListener('click', () => {
+            if (paginaActual > 0) {
+                paginaActual--;
+                updatePage();
+            }
+        });
+
+        document.getElementById('hoja-der').addEventListener('click', () => {
+            if (paginaActual < spreads.length - 1) {
+                paginaActual++;
+                updatePage();
+            }
+        });
+
+        document.getElementById('btn-abrir').addEventListener('click', () => {
+            const overlay = document.getElementById('overlay');
+            overlay.style.opacity = '0';
+            
+            // Reproducir audio local
+            const audio = document.getElementById('audio-poeta');
+            audio.currentTime = 53; // Iniciar en el segundo 53
+            audio.play().catch(error => console.log("Error de audio:", error));
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 1200);
+        });
+    </script>
+</body>
+</html>
